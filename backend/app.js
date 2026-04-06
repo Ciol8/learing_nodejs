@@ -1,6 +1,13 @@
 const express = require('express');
 const app = express();
 app.use(express.json());
+const mysql = require('mysql');
+const db = mysql.createConnection({
+    user: "root",
+    host: "localhost",
+    password: "",
+    database: "userdb"
+})
 
 let userList = [
     {
@@ -25,14 +32,35 @@ let userList = [
 ];
 
 app.get('/users', (req, res) => {
-    res.json(userList);
+    //res.json(userList);
+    db.query('SELECT * FROM users', (err, result) => {
+        if (err) {
+            res.status(400).json(err);
+        } else {
+            res.status(200).json(result);
+        }
+        res.json(result);
+    })
 })
 
 app.post("/users", (req, res) => {
+    //const newUser = req.body;
+    //userList.push(newUser)
+    //res.json(userList);
+    //const name = req.body.name;
+    //const age = req.body.age;
+    const { name, age } = req.body;
 
-    const newUser = req.body;
-    userList.push(newUser)
-    res.json(userList);
+    db.query(
+        "INSERT INTO users (name, age) VALUES (?,?);", [name, age],
+        (err, result) => {
+            if (err) {
+                res.status(400).json(err);
+            } else {
+                res.status(200).json(result);
+            }
+        })
+
 })
 
 app.put("/users", (req, res) => {
